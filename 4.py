@@ -55,4 +55,4 @@ try:
     user = User("Іван", 20, "ivan@example.com")
     print(f"Успішно створено користувача: {user.name}, {user.age}, {user.email}")
 except UserValidationError as e:
-    print(f"Valiation Error: "{e})
+    print(f"Valiation Error: {e}")
