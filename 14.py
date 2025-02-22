@@ -6,7 +6,6 @@ from tkinter import ttk, messagebox
 from urllib.parse import urlparse
 
 
-# Об'єкт для роботи з базою даних
 class Database:
     def __init__(self):
         self.conn = sqlite3.connect('web_search.db')
@@ -43,7 +42,7 @@ def __del__(self):
     self.conn.close()
 
 
-# Об'єкт для парсингу сайтів
+
 class WebParser:
     def __init__(self):
         self.headers = {'User-Agent': 'Mozilla/5.0'}
