@@ -31,16 +31,13 @@ class Database:
         cursor.execute("SELECT url FROM websites")
         return [row[0] for row in cursor.fetchall()]
 
+    def clear_db(self):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM websites")
+        self.conn.commit()
 
-def clear_db(self):
-    cursor = self.conn.cursor()
-    cursor.execute("DELETE FROM websites")
-    self.conn.commit()
-
-
-def __del__(self):
-    self.conn.close()
-
+    def __del__(self):
+        self.conn.close()
 
 
 class WebParser:
@@ -65,47 +62,71 @@ class WebParser:
         return sorted(results, key=lambda x: x['count'], reverse=True)
 
 
-def add_url(self):
-    url = self.url_entry.get().strip()
-    if not url.startswith(('http://', 'https://')):
-        url = 'http://' + url
-    if self.db.add_url(url):
-        messagebox.showinfo("Успіх", "URL додано до бази")
-        self.url_entry.delete(0, END)
-    else:
-        messagebox.showerror("Помилка", "URL вже існує або некоректний")
+class UserInterface:
+    def __init__(self, db, parser):
+        self.db = db
+        self.parser = parser
+        self.window = Tk()
+        self.window.title("Web Search")
 
+        self.url_entry = Entry(self.window, width=50)
+        self.url_entry.grid(row=0, column=0, padx=10, pady=10)
+        Button(self.window, text="Додати URL", command=self.add_url).grid(row=0, column=1, padx=10, pady=10)
 
-def search(self):
-    search_term = self.search_entry.get().strip()
-    if not search_term:
-        messagebox.showwarning("Попередження", "Введіть пошуковий запит")
-        return
+        self.search_entry = Entry(self.window, width=50)
+        self.search_entry.grid(row=1, column=0, padx=10, pady=10)
+        Button(self.window, text="Пошук", command=self.search).grid(row=1, column=1, padx=10, pady=10)
 
-    urls = self.db.get_urls()
-    if not urls:
-        messagebox.showwarning("Попередження", "Додайте URL до бази даних")
-        return
+        self.results_tree = ttk.Treeview(self.window, columns=("URL", "Кількість"), show='headings')
+        self.results_tree.heading("URL", text="URL")
+        self.results_tree.heading("Кількість", text="Кількість збігів")
+        self.results_tree.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
 
-    self.results_tree.delete(*self.results_tree.get_children())
-    results = self.parser.search_multiple(urls, search_term)
+        Button(self.window, text="Очистити базу", command=self.clear_db).grid(row=3, column=0, columnspan=2, pady=10)
 
-    for result in results:
-        self.results_tree.insert('', END, values=(result['url'], result['count']))
+    def add_url(self):
+        url = self.url_entry.get().strip()
+        if not url.startswith(('http://', 'https://')):
+            url = 'http://' + url
+        if self.db.add_url(url):
+            messagebox.showinfo("Успіх", "URL додано до бази")
+            self.url_entry.delete(0, END)
+        else:
+            messagebox.showerror("Помилка", "URL вже існує або некоректний")
+
+    def search(self):
+        search_term = self.search_entry.get().strip()
+        if not search_term:
+            messagebox.showwarning("Попередження", "Введіть пошуковий запит")
+            return
+
+        urls = self.db.get_urls()
+        if not urls:
+            messagebox.showwarning("Попередження", "Додайте URL до бази даних")
+            return
+
+        self.results_tree.delete(*self.results_tree.get_children())
+        results = self.parser.search_multiple(urls, search_term)
+
+        for result in results:
+            self.results_tree.insert('', END, values=(result['url'], result['count']))
+
     def clear_db(self):
-        if messagebox.askyesno("Підтвердження","Очистити базу даних?"):
+        if messagebox.askyesno("Підтвердження", "Очистити базу даних?"):
             self.db.clear_db()
             self.results_tree.delete(*self.results_tree.get_children())
-            messagebox.showinfo("Успіх","База даних очищена")
+            messagebox.showinfo("Успіх", "База даних очищена")
 
     def run(self):
         self.window.mainloop()
 
+
 def run():
     db = Database()
     parser = WebParser()
-    ui = UserInterface(db, parse)
+    ui = UserInterface(db, parser)
     ui.run()
+
 
 if __name__ == "__main__":
     run()
